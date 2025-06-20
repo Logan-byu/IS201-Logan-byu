@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Game</title>
+  <style>
+    body {
+      background: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    canvas {
+      background: #111;
+      border: 2px solid white; /* Me! */
+      border-radius: 10px; /* Me! */
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-top: 20px;
+      cursor: pointer;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px; /* Me! */
+    }
+
+    button:hover {
+      background-color: #45a049; /* Me! */
+    }
+
+    .info {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    #score {
+      font-size: 20px;
+      font-weight: bold; /* Me! */
+    }
+
+    #gameOverMessage {
+      display: none;
+      color: red; /* Me! */
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="../html/FromScratch.html" style="color:white; text-decoration: underline;">Scratch Page</a>
+  <h1>Snake Game</h1>
+  <button onclick="startGame()">Start Game</button> <!-- Me and AI lol! -->
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+  <div class="info">
+    <p id="score">Score: 0</p> <!-- Me! -->
+    <p>Use the arrow keys to move. Eat the red squares to grow. Avoid walls and yourself!</p> <!-- Me! -->
+    <div id="gameOverMessage">Game Over! Click Start to play again.</div> <!-- Me! -->
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const box = 20;
+    const cols = canvas.width / box;
+    const rows = canvas.height / box;
+
+    let snake, direction, food, game, score;
+    function randomPosition() {
+      return {
+        x: Math.floor(Math.random() * cols) * box,
+        y: Math.floor(Math.random() * rows) * box
+      };
+    }
+
+    function startGame() {
+      clearInterval(game);
+      snake = [{ x: 200, y: 200 }];
+      direction = "RIGHT";
+      food = randomPosition();
+      score = 0; // Me!
+      document.getElementById("score").textContent = "Score: 0";
+      document.getElementById("gameOverMessage").style.display = "none";
+      game = setInterval(draw, 100);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw food
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x, food.y, box, box);
+
+      // Move snake
+      const head = { ...snake[0] };
+      if (direction === "LEFT") head.x -= box;
+      if (direction === "RIGHT") head.x += box;
+      if (direction === "UP") head.y -= box;
+      if (direction === "DOWN") head.y += box;
+
+      // Collision check
+      if (
+        head.x < 0 || head.x >= canvas.width ||
+        head.y < 0 || head.y >= canvas.height ||
+        snake.some(seg => seg.x === head.x && seg.y === head.y)
+      ) {
+        clearInterval(game);
+        document.getElementById("gameOverMessage").style.display = "block";
+        return;
+      }
+
+      // Eat food
+      if (head.x === food.x && head.y === food.y) {
+        snake.unshift(head);
+        food = randomPosition();
+        score++; // Me!
+        document.getElementById("score").textContent = "Score: " + score;
+
+        if (score % 5 === 0) { // Me!
+          clearInterval(game);
+          game = setInterval(draw, Math.max(50, 100 - score * 2));
+        }
+      } else {
+        snake.pop();
+        snake.unshift(head);
+      }
+
+      // Change color based on score
+      ctx.fillStyle = score >= 15 ? "gold" : score >= 10 ? "yellow" : "lime"; // Me! also weird comment code...
+      snake.forEach(seg => ctx.fillRect(seg.x, seg.y, box, box));
+    }
+
+    // Controls
+    document.addEventListener("keydown", e => {
+      const key = e.key;
+      if (key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      else if (key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      else if (key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      else if (key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    });
+  </script>
+</body>
+</html>
